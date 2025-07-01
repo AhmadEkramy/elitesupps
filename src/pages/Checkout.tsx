@@ -30,9 +30,9 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [showSummary, setShowSummary] = useState(false);
 
-  // Delivery fee logic: free shipping for orders above 2000 EGP
+  // Delivery fee logic: free shipping for orders above 2500 EGP
   const subtotal = getTotalPrice();
-  const deliveryFee = subtotal > 2000 ? 0 : 85;
+  const deliveryFee = subtotal > 2500 ? 0 : 85;
   const couponDiscount = appliedCoupon ? Math.round(getTotalPrice() * (appliedCoupon.discountPercentage / 100)) : 0;
   const totalCost = subtotal + deliveryFee - couponDiscount;
 
@@ -40,9 +40,8 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.fullName || !formData.address || !formData.phoneNumber) {
       toast({
         title: "Missing Information",
@@ -51,9 +50,12 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
       });
       return;
     }
+    setShowSummary(true);
+  };
 
+  // New: Place order after summary is shown
+  const handlePlaceOrder = async () => {
     setIsSubmitting(true);
-    
     try {
       // Prepare order summary - start with base fields
       const orderSummary = {
@@ -62,13 +64,11 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
         couponDiscount,
         totalCost
       };
-
       // Only add couponCode if it has a valid value
       const hasCouponCode = formData.couponCode && formData.couponCode.trim() !== '';
       if (hasCouponCode) {
         (orderSummary as any).couponCode = formData.couponCode.trim();
       }
-
       // Prepare order data for Firebase
       const orderData = {
         items: cartItems,
@@ -81,20 +81,15 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
         orderSummary,
         status: 'pending' as const
       };
-
       // Sanitize order data to remove undefined values
       const sanitizedOrderData = JSON.parse(JSON.stringify(orderData));
-
       console.log('Order data being sent:', sanitizedOrderData);
-
       // Save order to Firebase
       const orderId = await ordersService.placeOrder(sanitizedOrderData);
-      
       toast({
         title: t('orderPlacedSuccess'),
         description: `Order #${orderId.slice(-6)} has been placed successfully!`
       });
-      
       clearCart();
       onBack();
     } catch (error) {
@@ -213,7 +208,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
               </div>
 
               {/* Coupon Code */}
-              <div>
+              <div className="mt-6 pb-4 border-t pt-6">
                 <Label htmlFor="couponCode">{t('coupon')}</Label>
                 <div className="flex gap-2">
                   <Input
@@ -228,9 +223,10 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                     placeholder="Enter coupon code (optional)"
                   />
                   <Button type="button" onClick={handleCouponSubmit} disabled={couponStatus === 'loading' || !formData.couponCode.trim()}>
-                    {couponStatus === 'loading' ? 'Checking...' : 'Submit'}
+                    {couponStatus === 'loading' ? 'Checking...' : 'Apply'}
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">You can leave this blank if you don't have a coupon. Proceed to checkout below.</p>
                 {couponStatus === 'valid' && appliedCoupon && (
                   <p className="text-green-600 text-sm mt-1">✅ Coupon applied! {appliedCoupon.discountPercentage}% discount</p>
                 )}
@@ -238,6 +234,14 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                   <p className="text-red-600 text-sm mt-1">❌ Invalid or inactive coupon</p>
                 )}
               </div>
+              {/* Submit Button for Order Information */}
+              <Button
+                type="submit"
+                className="w-full btn-glow text-lg py-3 mt-6"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'Continue to Summary'}
+              </Button>
             </form>
           </div>
 
@@ -245,7 +249,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
           {showSummary && (
             <div className="card-glow">
               <h2 className="text-2xl font-bold mb-6">{t('orderSummary')}</h2>
-              
               {/* Items List */}
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
@@ -266,7 +269,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                   </div>
                 ))}
               </div>
-
               {/* Cost Breakdown */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
@@ -288,10 +290,9 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                   <span className="text-accent">{totalCost} {t('egp')}</span>
                 </div>
               </div>
-
               {/* Place Order Button */}
               <Button
-                onClick={handleSubmit}
+                onClick={handlePlaceOrder}
                 disabled={isSubmitting}
                 className="w-full btn-glow text-lg py-3"
               >
