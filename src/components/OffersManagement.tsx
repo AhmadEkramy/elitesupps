@@ -10,6 +10,7 @@ import { offersService, Offer, productsService } from '@/services/firebaseServic
 import { Product } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp } from 'firebase/firestore';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 
 export const OffersManagement: React.FC = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -275,7 +276,14 @@ export const OffersManagement: React.FC = () => {
                 </Badge>
               </div>
               {hasImageUrl(offer) && (
-                <img src={offer.imageUrl} alt={offer.title} className="w-full h-32 object-cover rounded-lg mb-3" />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <img src={offer.imageUrl} alt={offer.title} className="w-full h-32 object-cover rounded-lg mb-3 cursor-pointer" />
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl p-0 bg-transparent shadow-none border-none flex items-center justify-center">
+                    <img src={offer.imageUrl} alt={offer.title} className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+                  </DialogContent>
+                </Dialog>
               )}
               <p className="text-muted-foreground mb-2">{offer.description}</p>
               <div className="flex items-center gap-4 mb-3">

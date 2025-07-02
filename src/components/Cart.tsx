@@ -3,6 +3,7 @@ import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 
 interface CartProps {
   isOpen: boolean;
@@ -45,11 +46,18 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose, onCheckout }) => {
               {cartItems.map((item) => (
                 <div key={`${item.id}-${item.selectedFlavor || 'default'}`} className="card-glow">
                   <div className="flex items-center gap-4">
-                    <img 
-                      src={item.image} 
-                      alt={language === 'ar' ? item.nameAr : item.name}
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <img 
+                          src={item.image} 
+                          alt={language === 'ar' ? item.nameAr : item.name}
+                          className="w-16 h-16 object-cover rounded-lg cursor-pointer"
+                        />
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl p-0 bg-transparent shadow-none border-none flex items-center justify-center">
+                        <img src={item.image} alt={language === 'ar' ? item.nameAr : item.name} className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+                      </DialogContent>
+                    </Dialog>
                     
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold truncate">

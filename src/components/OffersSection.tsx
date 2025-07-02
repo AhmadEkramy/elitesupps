@@ -13,6 +13,8 @@ export const OffersSection: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { addToCart } = useCart();
+  const [previewOffer, setPreviewOffer] = useState<any | null>(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,82 +51,122 @@ export const OffersSection: React.FC = () => {
 
         {/* Offers Grid */}
         {offers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {offers.map((offer, index) => {
               const offerProducts = offer.productIds?.length > 0 ? offer.productIds.map((pid: string) => products.find((p: any) => p.id === pid)).filter(Boolean) : [];
               return (
-                <div
-                  key={offer.id}
-                  className="group transition-all duration-500 transform hover:scale-105"
-                  style={{ animationDelay: `${index * 0.2}s` }}
-                >
-                  <div className="relative p-6 rounded-3xl shadow-2xl bg-white/70 dark:bg-gray-900/80 border-2 border-transparent group-hover:border-primary/80 group-hover:shadow-primary/30 group-hover:shadow-2xl transition-all duration-500 flex flex-col items-center overflow-hidden backdrop-blur-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:to-accent/10 before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-500">
-                    {offer.imageUrl && (
-                      <img
-                        src={offer.imageUrl}
-                        alt={offer.title}
-                        className="w-full h-40 object-contain rounded-xl mb-4 group-hover:shadow-lg transition-all duration-500"
-                      />
-                    )}
-                    <h3 className="font-bold text-2xl mb-2 text-center group-hover:text-primary transition-colors duration-500 drop-shadow-lg">
-                      {offer.title}
-                    </h3>
-                    {typeof (offer as any).price === 'number' && (offer as any).price > 0 && (
-                      <div className="text-lg font-bold text-primary mb-2 text-center drop-shadow">
-                        {(offer as any).price} EGP
+                <div key={offer.id} style={{ display: 'contents' }}>
+                  {/* Custom Modal for Offer Preview */}
+                  {previewOffer?.id === offer.id && (
+                    <div style={{
+                      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                      background: 'rgba(0,0,0,0.8)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <div style={{background: 'white', padding: 32, borderRadius: 16, minWidth: 320, maxWidth: 400, width: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                        <button onClick={() => setPreviewOffer(null)} style={{position: 'absolute', top: 12, right: 16, fontSize: 28, background: 'none', border: 'none', color: '#888', cursor: 'pointer', zIndex: 2}} aria-label="Close">&times;</button>
+                        <img src={offer.imageUrl} alt={offer.title} style={{width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 12, marginBottom: 16}} />
+                        <h3 style={{fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginBottom: 8}}>{offer.title}</h3>
+                        <p style={{fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 8}}>{offer.description}</p>
+                        <div style={{marginBottom: 8, fontWeight: 'bold', color: '#f59e42', fontSize: 16}}>{offer.discountPercentage}% OFF</div>
+                        <div style={{marginBottom: 8, fontSize: 13, color: '#888'}}>Valid until: {offer.validUntil?.toDate?.().toLocaleDateString?.() || ''}</div>
+                        {offer.productIds?.length > 0 && (
+                          <div style={{display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center', marginBottom: 8}}>
+                            {offer.productIds.map((pid: string) => {
+                              const product = products.find((p: any) => p.id === pid);
+                              return product ? (
+                                <span key={pid} style={{background: '#f5e7c6', color: '#b77d1c', borderRadius: 8, padding: '2px 10px', fontSize: 12}}>{product.name}</span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
+                        {/* Quantity Counter */}
+                        <div style={{display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0'}}>
+                          <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={{width: 36, height: 36, borderRadius: 8, border: '1px solid #eee', background: '#fafafa', fontSize: 22, cursor: 'pointer'}}>−</button>
+                          <span style={{fontWeight: 'bold', fontSize: 20, width: 32, textAlign: 'center'}}>{quantity}</span>
+                          <button onClick={() => setQuantity(q => q + 1)} style={{width: 36, height: 36, borderRadius: 8, border: '1px solid #eee', background: '#fafafa', fontSize: 22, cursor: 'pointer'}}>+</button>
+                        </div>
+                        <div style={{fontWeight: 'bold', fontSize: 18, marginBottom: 16}}>{offer.price} EGP</div>
+                        <button
+                          onClick={() => {
+                            const appliedProductNames = offer.productIds?.map((pid: string) => {
+                              const product = products.find((p: any) => p.id === pid);
+                              return product ? product.name : null;
+                            }).filter(Boolean).join(', ');
+                            const offerProduct = {
+                              id: `offer-${offer.id}`,
+                              name: offer.title,
+                              nameAr: offer.titleAr || offer.title,
+                              price: offer.price || 0,
+                              category: 'special-offer',
+                              image: offer.imageUrl || '',
+                              description: offer.description + (appliedProductNames ? `\nIncludes: ${appliedProductNames}` : ''),
+                              descriptionAr: offer.descriptionAr || offer.description,
+                              flavors: [],
+                              inStock: true,
+                              isOffer: true,
+                              originalPrice: undefined,
+                              discountPercentage: offer.discountPercentage,
+                            };
+                            for (let i = 0; i < quantity; i++) {
+                              addToCart(offerProduct);
+                            }
+                            setPreviewOffer(null);
+                          }}
+                          style={{width: '100%', background: 'linear-gradient(90deg, #FFD600 0%, #FFB800 100%)', color: '#222', fontWeight: 'bold', fontSize: 20, border: 'none', borderRadius: 8, padding: '12px 0', marginTop: 8, cursor: 'pointer', boxShadow: '0 2px 8px #ffb80033'}}
+                        >
+                          Add to Cart
+                        </button>
                       </div>
-                    )}
-                    <p className="mb-2 text-center text-muted-foreground group-hover:text-foreground transition-colors duration-500">
-                      {offer.description}
-                    </p>
-                    <div className="mb-2 font-semibold text-primary text-center bg-primary/10 px-3 py-1 rounded-full inline-block shadow group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-accent group-hover:text-white transition-all duration-500">
-                      {offer.discountPercentage}% OFF
                     </div>
-                    <div className="mb-2 text-sm text-muted-foreground text-center">
-                      Valid until: {offer.validUntil?.toDate?.().toLocaleDateString?.() || ''}
-                    </div>
-                    {offer.productIds?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 justify-center mt-2 mb-2">
-                        {offer.productIds.map((pid: string) => {
-                          const product = products.find((p: any) => p.id === pid);
-                          return product ? (
-                            <Badge key={pid} variant="secondary" className="text-xs px-3 py-1 rounded-full bg-accent/20 text-accent-foreground shadow group-hover:bg-primary/20 group-hover:text-primary transition-all duration-500">
-                              {product.name}
-                            </Badge>
-                          ) : null;
-                        })}
+                  )}
+                  {/* Offer Card */}
+                  <div
+                    className="group transition-all duration-500 transform hover:scale-105"
+                    style={{ animationDelay: `${index * 0.2}s` }}
+                  >
+                    <div className="relative p-6 rounded-3xl shadow-2xl bg-white/70 dark:bg-gray-900/80 border-2 border-transparent group-hover:border-primary/80 group-hover:shadow-primary/30 group-hover:shadow-2xl transition-all duration-500 flex flex-col items-center overflow-hidden backdrop-blur-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:to-accent/10 before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-500">
+                      {offer.imageUrl && (
+                        <img
+                          src={offer.imageUrl}
+                          alt={offer.title}
+                          className="w-full h-40 object-contain rounded-xl mb-4 group-hover:shadow-lg transition-all duration-500 cursor-pointer z-10"
+                          onClick={() => { setPreviewOffer(offer); setQuantity(1); }}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setPreviewOffer(offer); setQuantity(1); } }}
+                        />
+                      )}
+                      <h3 className="font-bold text-2xl mb-2 text-center group-hover:text-primary transition-colors duration-500 drop-shadow-lg">
+                        {offer.title}
+                      </h3>
+                      {typeof (offer as any).price === 'number' && (offer as any).price > 0 && (
+                        <div className="text-lg font-bold text-primary mb-2 text-center drop-shadow">
+                          {(offer as any).price} EGP
+                        </div>
+                      )}
+                      <p className="mb-2 text-center text-muted-foreground group-hover:text-foreground transition-colors duration-500">
+                        {offer.description}
+                      </p>
+                      <div className="mb-2 font-semibold text-primary text-center bg-primary/10 px-3 py-1 rounded-full inline-block shadow group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-accent group-hover:text-white transition-all duration-500">
+                        {offer.discountPercentage}% OFF
                       </div>
-                    )}
-                    {offerProducts.length > 0 && (
-                      <button
-                        className="btn-primary px-8 py-2 rounded-xl mt-4 font-bold shadow-lg transition-all duration-500 group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-accent group-hover:text-white group-hover:scale-110 group-hover:shadow-primary/40"
-                        onClick={() => {
-                          const appliedProductNames = offer.productIds?.map((pid: string) => {
+                      <div className="mb-2 text-sm text-muted-foreground text-center">
+                        Valid until: {offer.validUntil?.toDate?.().toLocaleDateString?.() || ''}
+                      </div>
+                      {offer.productIds?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 justify-center mt-2 mb-2">
+                          {offer.productIds.map((pid: string) => {
                             const product = products.find((p: any) => p.id === pid);
-                            return product ? product.name : null;
-                          }).filter(Boolean).join(', ');
-                          const offerProduct = {
-                            id: `offer-${offer.id}`,
-                            name: offer.title,
-                            nameAr: offer.titleAr || offer.title,
-                            price: (offer as any).price || 0,
-                            category: 'special-offer',
-                            image: offer.imageUrl || '',
-                            description: offer.description + (appliedProductNames ? `\nIncludes: ${appliedProductNames}` : ''),
-                            descriptionAr: offer.descriptionAr || offer.description,
-                            flavors: [],
-                            inStock: true,
-                            isOffer: true,
-                            originalPrice: undefined,
-                            discountPercentage: offer.discountPercentage,
-                          };
-                          addToCart(offerProduct);
-                        }}
-                      >
-                        Add to Cart
-                      </button>
-                    )}
-                    <div className="absolute inset-0 pointer-events-none rounded-3xl group-hover:ring-4 group-hover:ring-primary/30 transition-all duration-500"></div>
+                            return product ? (
+                              <Badge key={pid} variant="secondary" className="text-xs px-3 py-1 rounded-full bg-accent/20 text-accent-foreground shadow group-hover:bg-primary/20 group-hover:text-primary transition-all duration-500">
+                                {product.name}
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                      <div className="absolute inset-0 pointer-events-none rounded-3xl group-hover:ring-4 group-hover:ring-primary/30 transition-all duration-500"></div>
+                    </div>
                   </div>
                 </div>
               );

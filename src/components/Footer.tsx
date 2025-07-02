@@ -17,7 +17,6 @@ export const Footer: React.FC<FooterProps> = ({ onAdminClick }) => {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <img src="/logo.jpg" alt="Logo" className="w-24 h-12 object-contain bg-white" />
               <div className="text-xl font-bold text-primary">
                 {t('brandName')}
               </div>

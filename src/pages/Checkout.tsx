@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/hooks/use-toast';
 import { ordersService, couponsService, Coupon } from '@/services/firebaseService';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 
 interface CheckoutProps {
   onBack: () => void;
@@ -253,11 +254,18 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
                   <div key={`${item.id}-${item.selectedFlavor || 'default'}`} className="flex items-center gap-3 py-3 border-b border-border">
-                    <img 
-                      src={item.image} 
-                      alt={language === 'ar' ? item.nameAr : item.name}
-                      className="w-12 h-12 object-cover rounded-lg"
-                    />
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <img 
+                          src={item.image} 
+                          alt={language === 'ar' ? item.nameAr : item.name}
+                          className="w-12 h-12 object-cover rounded-lg cursor-pointer"
+                        />
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl p-0 bg-transparent shadow-none border-none flex items-center justify-center">
+                        <img src={item.image} alt={language === 'ar' ? item.nameAr : item.name} className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+                      </DialogContent>
+                    </Dialog>
                     <div className="flex-1">
                       <h4 className="font-medium">{language === 'ar' ? item.nameAr : item.name}</h4>
                       {item.selectedFlavor && (

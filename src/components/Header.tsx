@@ -45,7 +45,6 @@ export const Header: React.FC<HeaderProps> = ({ onNavClick }) => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img src="/logo.jpg" alt="Logo" className="w-24 h-12 object-contain bg-white" />
             <div className="text-xl font-bold text-shine">
               {t('brandName')}
             </div>
