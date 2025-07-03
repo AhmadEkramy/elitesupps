@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const slides = [
   {
     id: 1,
-    image: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop',
+    image: 'https://images.pexels.com/photos/16216609/pexels-photo-16216609.jpeg',
     titleEn: 'High Protein Formula',
     titleAr: 'تركيبة عالية البروتين',
     subtitleEn: 'Build lean muscle mass with our premium whey protein',
