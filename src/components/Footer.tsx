@@ -89,7 +89,7 @@ export const Footer: React.FC<FooterProps> = ({ onAdminClick }) => {
         {/* Bottom Bar */}
         <div className="border-t border-footer-foreground/20 mt-8 pt-8 text-center">
           <p className="text-footer-foreground/60">
-            © 2024 Elite Supps. All rights reserved. | Powered by Elite Performance
+            © 2025 Elite Supps. All rights reserved. | Powered by Elite Performance
           </p>
         </div>
       </div>
