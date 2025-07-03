@@ -205,10 +205,11 @@ export const ProductManagement: React.FC = () => {
                   <SelectItem value="protein">Protein</SelectItem>
                   <SelectItem value="creatine">Creatine</SelectItem>
                   <SelectItem value="massGainer">Mass Gainer</SelectItem>
-                  <SelectItem value="energyProducts">Energy Products</SelectItem>
-                  <SelectItem value="vitamins">Vitamins</SelectItem>
-                  <SelectItem value="accessories">Accessories</SelectItem>
-                  <SelectItem value="fatBurner">Fat Burner</SelectItem>
+                  <SelectItem value="carb">Carb</SelectItem>
+                  <SelectItem value="fatBurner">Fat burner</SelectItem>
+                  <SelectItem value="testBoster">Test Boster</SelectItem>
+                  <SelectItem value="aminoAcids">Amino Acids</SelectItem>
+                  <SelectItem value="preworkout">Preworkout</SelectItem>
                 </SelectContent>
               </Select>
               <div>
@@ -272,10 +273,11 @@ export const ProductManagement: React.FC = () => {
                       <SelectItem value="protein">Protein</SelectItem>
                       <SelectItem value="creatine">Creatine</SelectItem>
                       <SelectItem value="massGainer">Mass Gainer</SelectItem>
-                      <SelectItem value="energyProducts">Energy Products</SelectItem>
-                      <SelectItem value="vitamins">Vitamins</SelectItem>
-                      <SelectItem value="accessories">Accessories</SelectItem>
-                      <SelectItem value="fatBurner">Fat Burner</SelectItem>
+                      <SelectItem value="carb">Carb</SelectItem>
+                      <SelectItem value="fatBurner">Fat burner</SelectItem>
+                      <SelectItem value="testBoster">Test Boster</SelectItem>
+                      <SelectItem value="aminoAcids">Amino Acids</SelectItem>
+                      <SelectItem value="preworkout">Preworkout</SelectItem>
                     </SelectContent>
                   </Select>
                   <div>

@@ -76,8 +76,12 @@ const translations = {
     
     // Products
     highProtein: 'High Protein Formula',
-    preWorkout: 'Pre-Workout Energy',
+    preWorkout: 'Preworkout',
     recovery: 'Recovery & Repair',
+    aminoAcids: 'Amino Acids',
+    testBoster: 'Test Boster',
+    fatBurner: 'Fat burner',
+    carb: 'Carb',
     
     // Common
     egp: 'EGP',
@@ -150,8 +154,12 @@ const translations = {
     
     // Products
     highProtein: 'تركيبة عالية البروتين',
-    preWorkout: 'طاقة ما قبل التمرين',
+    preWorkout: 'مكمل ما قبل التمرين',
     recovery: 'الإستشفاء والإصلاح',
+    aminoAcids: 'أحماض أمينية',
+    testBoster: 'تيست بوستر',
+    fatBurner: 'حارق الدهون',
+    carb: 'كارب',
     
     // Common
     egp: 'جنيه',

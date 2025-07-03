@@ -9,11 +9,11 @@ const categories = [
   'protein',
   'creatine',
   'massGainer',
-  'fatDialogue',
-  'energyProducts',
-  'vitamins',
-  'generalSupplements',
-  'accessories'
+  'carb',
+  'fatBurner',
+  'testBoster',
+  'aminoAcids',
+  'preworkout'
 ];
 
 export const MenuSection: React.FC = () => {
