@@ -82,12 +82,8 @@ export const MenuSection: React.FC = () => {
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-          {products.slice(0, visibleProducts).map((product, index) => (
-            <div 
-              key={product.id} 
-              className="slide-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
+          {products.slice(0, visibleProducts).map((product) => (
+            <div key={product.id}>
               <ProductCard product={product} />
             </div>
           ))}
