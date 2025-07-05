@@ -181,10 +181,20 @@ export const ProductManagement: React.FC = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
+              <Input
+                placeholder="Product Name (Arabic)"
+                value={formData.nameAr}
+                onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+              />
               <Textarea
                 placeholder="Description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+              <Textarea
+                placeholder="Description (Arabic)"
+                value={formData.descriptionAr}
+                onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
               />
               <Input
                 placeholder="Image URL"
@@ -210,6 +220,7 @@ export const ProductManagement: React.FC = () => {
                   <SelectItem value="testBoster">Test Boster</SelectItem>
                   <SelectItem value="aminoAcids">Amino Acids</SelectItem>
                   <SelectItem value="preworkout">Preworkout</SelectItem>
+                  <SelectItem value="vitamins">Vitamins</SelectItem>
                 </SelectContent>
               </Select>
               <div>
@@ -250,6 +261,11 @@ export const ProductManagement: React.FC = () => {
                     placeholder="Product Name"
                   />
                   <Input
+                    value={formData.nameAr}
+                    onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+                    placeholder="Product Name (Arabic)"
+                  />
+                  <Input
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
@@ -259,6 +275,11 @@ export const ProductManagement: React.FC = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Description"
+                  />
+                  <Textarea
+                    value={formData.descriptionAr}
+                    onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
+                    placeholder="Description (Arabic)"
                   />
                   <Input
                     value={formData.image}
@@ -278,6 +299,7 @@ export const ProductManagement: React.FC = () => {
                       <SelectItem value="testBoster">Test Boster</SelectItem>
                       <SelectItem value="aminoAcids">Amino Acids</SelectItem>
                       <SelectItem value="preworkout">Preworkout</SelectItem>
+                      <SelectItem value="vitamins">Vitamins</SelectItem>
                     </SelectContent>
                   </Select>
                   <div>

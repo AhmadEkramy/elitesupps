@@ -13,7 +13,8 @@ const categories = [
   'fatBurner',
   'testBoster',
   'aminoAcids',
-  'preworkout'
+  'preworkout',
+  'vitamins'
 ];
 
 export const MenuSection: React.FC = () => {

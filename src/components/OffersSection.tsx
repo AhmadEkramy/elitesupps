@@ -54,6 +54,12 @@ export const OffersSection: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {offers.map((offer, index) => {
               const offerProducts = offer.productIds?.length > 0 ? offer.productIds.map((pid: string) => products.find((p: any) => p.id === pid)).filter(Boolean) : [];
+              
+              // Calculate total price of all products in the offer
+              const totalOriginalPrice = offerProducts.reduce((total, product) => total + (product?.price || 0), 0);
+              const discountAmount = (totalOriginalPrice * offer.discountPercentage) / 100;
+              const finalPrice = totalOriginalPrice - discountAmount;
+              
               return (
                 <div key={offer.id} style={{ display: 'contents' }}>
                   {/* Custom Modal for Offer Preview */}
@@ -64,28 +70,41 @@ export const OffersSection: React.FC = () => {
                     }}>
                       <div style={{background: 'white', padding: 32, borderRadius: 16, minWidth: 320, maxWidth: 400, width: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                         <button onClick={() => setPreviewOffer(null)} style={{position: 'absolute', top: 12, right: 16, fontSize: 28, background: 'none', border: 'none', color: '#888', cursor: 'pointer', zIndex: 2}} aria-label="Close">&times;</button>
-                        <img src={offer.imageUrl} alt={offer.title} style={{width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 12, marginBottom: 16}} />
+                        {/* Product Images Grid in Modal */}
+                        {offer.productIds?.length > 0 && (
+                          <div style={{width: '100%', marginBottom: 16}}>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxHeight: 200, overflow: 'hidden', borderRadius: 12}}>
+                              {offer.productIds.slice(0, 4).map((pid: string) => {
+                                const product = products.find((p: any) => p.id === pid);
+                                return product ? (
+                                  <img
+                                    key={pid}
+                                    src={product.image}
+                                    alt={product.name}
+                                    style={{width: '100%', height: 80, objectFit: 'cover', borderRadius: 8}}
+                                  />
+                                ) : null;
+                              })}
+                            </div>
+                            {offer.productIds.length > 4 && (
+                              <div style={{textAlign: 'center', marginTop: 8, fontSize: 12, color: '#666'}}>
+                                +{offer.productIds.length - 4} more products
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <h3 style={{fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginBottom: 8}}>{offer.title}</h3>
+                        <div style={{fontWeight: 'bold', fontSize: 18, marginBottom: 8, color: '#f59e42'}}>{finalPrice.toFixed(0)} EGP</div>
+                        <div style={{fontSize: 14, color: '#888', marginBottom: 8, textDecoration: 'line-through'}}>{totalOriginalPrice.toFixed(0)} EGP</div>
                         <p style={{fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 8}}>{offer.description}</p>
                         <div style={{marginBottom: 8, fontWeight: 'bold', color: '#f59e42', fontSize: 16}}>{offer.discountPercentage}% OFF</div>
                         <div style={{marginBottom: 8, fontSize: 13, color: '#888'}}>Valid until: {offer.validUntil?.toDate?.().toLocaleDateString?.() || ''}</div>
-                        {offer.productIds?.length > 0 && (
-                          <div style={{display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center', marginBottom: 8}}>
-                            {offer.productIds.map((pid: string) => {
-                              const product = products.find((p: any) => p.id === pid);
-                              return product ? (
-                                <span key={pid} style={{background: '#f5e7c6', color: '#b77d1c', borderRadius: 8, padding: '2px 10px', fontSize: 12}}>{product.name}</span>
-                              ) : null;
-                            })}
-                          </div>
-                        )}
                         {/* Quantity Counter */}
                         <div style={{display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0'}}>
                           <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={{width: 36, height: 36, borderRadius: 8, border: '1px solid #eee', background: '#fafafa', fontSize: 22, cursor: 'pointer'}}>−</button>
                           <span style={{fontWeight: 'bold', fontSize: 20, width: 32, textAlign: 'center'}}>{quantity}</span>
                           <button onClick={() => setQuantity(q => q + 1)} style={{width: 36, height: 36, borderRadius: 8, border: '1px solid #eee', background: '#fafafa', fontSize: 22, cursor: 'pointer'}}>+</button>
                         </div>
-                        <div style={{fontWeight: 'bold', fontSize: 18, marginBottom: 16}}>{offer.price} EGP</div>
                         <button
                           onClick={() => {
                             const appliedProductNames = offer.productIds?.map((pid: string) => {
@@ -96,15 +115,15 @@ export const OffersSection: React.FC = () => {
                               id: `offer-${offer.id}`,
                               name: offer.title,
                               nameAr: offer.titleAr || offer.title,
-                              price: offer.price || 0,
+                              price: finalPrice,
                               category: 'special-offer',
-                              image: offer.imageUrl || '',
+                              image: offer.productIds?.[0] ? products.find((p: any) => p.id === offer.productIds[0])?.image || '' : '',
                               description: offer.description + (appliedProductNames ? `\nIncludes: ${appliedProductNames}` : ''),
                               descriptionAr: offer.descriptionAr || offer.description,
                               flavors: [],
                               inStock: true,
                               isOffer: true,
-                              originalPrice: undefined,
+                              originalPrice: totalOriginalPrice,
                               discountPercentage: offer.discountPercentage,
                             };
                             for (let i = 0; i < quantity; i++) {
@@ -125,25 +144,42 @@ export const OffersSection: React.FC = () => {
                     style={{ animationDelay: `${index * 0.2}s` }}
                   >
                     <div className="relative p-6 rounded-3xl shadow-2xl bg-white/70 dark:bg-gray-900/80 border-2 border-transparent group-hover:border-primary/80 group-hover:shadow-primary/30 group-hover:shadow-2xl transition-all duration-500 flex flex-col items-center overflow-hidden backdrop-blur-xl before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:to-accent/10 before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-500">
-                      {offer.imageUrl && (
-                        <img
-                          src={offer.imageUrl}
-                          alt={offer.title}
-                          className="w-full h-40 object-contain rounded-xl mb-4 group-hover:shadow-lg transition-all duration-500 cursor-pointer z-10"
-                          onClick={() => { setPreviewOffer(offer); setQuantity(1); }}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setPreviewOffer(offer); setQuantity(1); } }}
-                        />
+                      {/* Product Images Grid */}
+                      {offer.productIds?.length > 0 && (
+                        <div className="w-full mb-4">
+                          <div className="grid grid-cols-2 gap-2 max-h-40 overflow-hidden rounded-xl">
+                            {offer.productIds.slice(0, 4).map((pid: string) => {
+                              const product = products.find((p: any) => p.id === pid);
+                              return product ? (
+                                <img
+                                  key={pid}
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-full h-20 object-contain bg-white rounded-lg group-hover:shadow-lg transition-all duration-500 cursor-pointer z-10"
+                                  onClick={() => { setPreviewOffer(offer); setQuantity(1); }}
+                                  role="button"
+                                  tabIndex={0}
+                                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setPreviewOffer(offer); setQuantity(1); } }}
+                                />
+                              ) : null;
+                            })}
+                          </div>
+                          {offer.productIds.length > 4 && (
+                            <div className="text-center mt-2 text-sm text-muted-foreground">
+                              +{offer.productIds.length - 4} more products
+                            </div>
+                          )}
+                        </div>
                       )}
                       <h3 className="font-bold text-2xl mb-2 text-center group-hover:text-primary transition-colors duration-500 drop-shadow-lg">
                         {offer.title}
                       </h3>
-                      {typeof (offer as any).price === 'number' && (offer as any).price > 0 && (
-                        <div className="text-lg font-bold text-primary mb-2 text-center drop-shadow">
-                          {(offer as any).price} EGP
-                        </div>
-                      )}
+                      <div className="text-lg font-bold text-primary mb-2 text-center drop-shadow">
+                        {finalPrice.toFixed(0)} EGP
+                      </div>
+                      <div className="text-sm text-muted-foreground mb-2 text-center line-through">
+                        {totalOriginalPrice.toFixed(0)} EGP
+                      </div>
                       <p className="mb-2 text-center text-muted-foreground group-hover:text-foreground transition-colors duration-500">
                         {offer.description}
                       </p>
@@ -165,6 +201,36 @@ export const OffersSection: React.FC = () => {
                           })}
                         </div>
                       )}
+                      
+                      {/* Add to Cart Button */}
+                      <button
+                        onClick={() => {
+                          const appliedProductNames = offer.productIds?.map((pid: string) => {
+                            const product = products.find((p: any) => p.id === pid);
+                            return product ? product.name : null;
+                          }).filter(Boolean).join(', ');
+                          const offerProduct = {
+                            id: `offer-${offer.id}`,
+                            name: offer.title,
+                            nameAr: offer.titleAr || offer.title,
+                            price: finalPrice,
+                            category: 'special-offer',
+                            image: offer.productIds?.[0] ? products.find((p: any) => p.id === offer.productIds[0])?.image || '' : '',
+                            description: offer.description + (appliedProductNames ? `\nIncludes: ${appliedProductNames}` : ''),
+                            descriptionAr: offer.descriptionAr || offer.description,
+                            flavors: [],
+                            inStock: true,
+                            isOffer: true,
+                            originalPrice: totalOriginalPrice,
+                            discountPercentage: offer.discountPercentage,
+                          };
+                          addToCart(offerProduct);
+                        }}
+                        className="w-full mt-4 bg-gradient-to-r from-primary to-accent hover:from-accent hover:to-primary text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        Add to Cart
+                      </button>
+                      
                       <div className="absolute inset-0 pointer-events-none rounded-3xl group-hover:ring-4 group-hover:ring-primary/30 transition-all duration-500"></div>
                     </div>
                   </div>

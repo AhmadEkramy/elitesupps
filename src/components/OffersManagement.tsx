@@ -20,17 +20,15 @@ export const OffersManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState<Partial<Offer & { imageUrl?: string; price?: number }>>({
+  const [formData, setFormData] = useState<Partial<Offer>>({
     title: '',
     titleAr: '',
     description: '',
     descriptionAr: '',
     discountPercentage: 0,
-    price: 0,
     productIds: [],
     isActive: true,
-    validUntil: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
-    imageUrl: ''
+    validUntil: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
   });
 
   useEffect(() => {
@@ -113,18 +111,16 @@ export const OffersManagement: React.FC = () => {
     }
   };
 
-  const startEditing = (offer: Offer & { imageUrl?: string; price?: number }) => {
+  const startEditing = (offer: Offer) => {
     setFormData({
       title: offer.title,
       titleAr: offer.titleAr,
       description: offer.description,
       descriptionAr: offer.descriptionAr,
       discountPercentage: offer.discountPercentage,
-      price: offer.price ?? 0,
       productIds: offer.productIds,
       isActive: offer.isActive,
-      validUntil: offer.validUntil,
-      imageUrl: offer.imageUrl || ''
+      validUntil: offer.validUntil
     });
     setEditingOffer(offer.id!);
     setShowAddForm(true);
@@ -137,11 +133,9 @@ export const OffersManagement: React.FC = () => {
       description: '',
       descriptionAr: '',
       discountPercentage: 0,
-      price: 0,
       productIds: [],
       isActive: true,
-      validUntil: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
-      imageUrl: ''
+      validUntil: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
     });
   };
 
@@ -153,9 +147,6 @@ export const OffersManagement: React.FC = () => {
     
     setFormData({ ...formData, productIds: newIds });
   };
-
-  // Helper type guard
-  const hasImageUrl = (offer: any): offer is { imageUrl: string } => typeof offer.imageUrl === 'string' && offer.imageUrl.length > 0;
 
   if (loading) {
     return <div className="text-center py-8">Loading offers...</div>;
@@ -195,23 +186,12 @@ export const OffersManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
               />
               <Input
-                type="number"
-                placeholder="Offer Price (EGP)"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-              />
-              <Input
                 type="date"
                 value={formData.validUntil ? new Date(formData.validUntil.toDate()).toISOString().split('T')[0] : ''}
                 onChange={(e) => setFormData({ 
                   ...formData, 
                   validUntil: Timestamp.fromDate(new Date(e.target.value)) 
                 })}
-              />
-              <Input
-                placeholder="Image URL"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
               />
               <Textarea
                 placeholder="Description"
@@ -243,6 +223,36 @@ export const OffersManagement: React.FC = () => {
                     </div>
                   ))}
                 </div>
+                
+                {/* Price Preview */}
+                {formData.productIds && formData.productIds.length > 0 && formData.discountPercentage > 0 && (
+                  <div className="mt-4 p-3 bg-accent/10 rounded-lg">
+                    <h4 className="font-medium mb-2">Price Preview:</h4>
+                    {(() => {
+                      const selectedProducts = formData.productIds.map(pid => products.find(p => p.id === pid)).filter(Boolean);
+                      const totalOriginalPrice = selectedProducts.reduce((total, product) => total + (product?.price || 0), 0);
+                      const discountAmount = (totalOriginalPrice * formData.discountPercentage) / 100;
+                      const finalPrice = totalOriginalPrice - discountAmount;
+                      
+                      return (
+                        <div className="text-sm space-y-1">
+                          <div className="flex justify-between">
+                            <span>Original Price:</span>
+                            <span className="line-through">{totalOriginalPrice.toFixed(0)} EGP</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Discount ({formData.discountPercentage}%):</span>
+                            <span className="text-red-600">-{discountAmount.toFixed(0)} EGP</span>
+                          </div>
+                          <div className="flex justify-between font-bold text-primary">
+                            <span>Final Price:</span>
+                            <span>{finalPrice.toFixed(0)} EGP</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
               <div className="flex items-center space-x-2 md:col-span-2">
                 <Switch
@@ -275,16 +285,6 @@ export const OffersManagement: React.FC = () => {
                   {offer.isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
-              {hasImageUrl(offer) && (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <img src={offer.imageUrl} alt={offer.title} className="w-full h-32 object-cover rounded-lg mb-3 cursor-pointer" />
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl p-0 bg-transparent shadow-none border-none flex items-center justify-center">
-                    <img src={offer.imageUrl} alt={offer.title} className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
-                  </DialogContent>
-                </Dialog>
-              )}
               <p className="text-muted-foreground mb-2">{offer.description}</p>
               <div className="flex items-center gap-4 mb-3">
                 <Badge variant="outline" className="bg-accent text-accent-foreground">
@@ -293,10 +293,35 @@ export const OffersManagement: React.FC = () => {
                 <span className="text-sm text-muted-foreground">
                   Valid until: {offer.validUntil.toDate().toLocaleDateString()}
                 </span>
-                {typeof (offer as any).price === 'number' && (offer as any).price > 0 && (
-                  <span className="text-sm font-bold text-primary">{(offer as any).price} EGP</span>
-                )}
               </div>
+              {/* Calculate and display prices */}
+              {offer.productIds?.length > 0 && (
+                <div className="mb-3">
+                  {(() => {
+                    const offerProducts = offer.productIds.map(pid => products.find(p => p.id === pid)).filter(Boolean);
+                    const totalOriginalPrice = offerProducts.reduce((total, product) => total + (product?.price || 0), 0);
+                    const discountAmount = (totalOriginalPrice * offer.discountPercentage) / 100;
+                    const finalPrice = totalOriginalPrice - discountAmount;
+                    
+                    return (
+                      <div className="text-sm">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-muted-foreground">Original Price:</span>
+                          <span className="line-through">{totalOriginalPrice.toFixed(0)} EGP</span>
+                        </div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-muted-foreground">Discount:</span>
+                          <span className="text-red-600">-{discountAmount.toFixed(0)} EGP</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Final Price:</span>
+                          <span className="font-bold text-primary">{finalPrice.toFixed(0)} EGP</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
               <div className="mb-3">
                 <p className="text-sm font-medium mb-1">Applied to {offer.productIds.length} products</p>
                 <div className="flex flex-wrap gap-1">
